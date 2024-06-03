@@ -139,3 +139,6 @@ def change_password(request):
                 },
                 status=status.HTTP_406_NOT_ACCEPTABLE
             )
+        
+def reset_password(request):
+    pass
