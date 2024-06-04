@@ -9,8 +9,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken,AccessToken
 from .models import *
-
-
+import random
+from django.shortcuts import get_object_or_404
+import datetime
+from .security import create_token,decrypt_token
 # Create your views here.
 
 
@@ -140,5 +142,57 @@ def change_password(request):
                 status=status.HTTP_406_NOT_ACCEPTABLE
             )
         
-def reset_password(request):
-    pass
+
+@csrf_exempt
+@api_view(["POST"])     
+def forgot_password(request):
+    email=request.POST['email_of_user']
+    user=get_object_or_404(User,email=email)
+    otp=str(random.randint(100000,999999))
+    print(otp)
+    payload = {
+        'user_id': user.id,
+        'email': user.email,
+        'otp': otp,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
+    }
+    token=create_token(payload)
+
+    return JsonResponse({
+        'otp':otp,
+        'token':token
+    },safe=False,status=200)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def check_otp(request):
+    otp=request.POST['otp']
+    enc_token=request.POST['token']
+    data=decrypt_token(enc_token)
+    if data['status']:
+        otp_real=data['payload']['otp']
+        if otp==otp_real:
+            email=data['payload']['email']
+            user=User.objects.get(email=email)
+            access_token=str(RefreshToken.for_user(user).access_token)
+
+            return JsonResponse(
+                {
+                    'access_token':access_token,
+                    'status':True,
+                },
+                status=status.HTTP_200_OK
+            )
+        else:
+            return JsonResponse({
+                'message':'OTP didnt matched....'
+            },status=400)
+            
+    else:
+        return JsonResponse({
+            'message':'OTP expired...Try Again!!',
+            'status':False
+        },
+        status=status.HTTP_400_BAD_REQUEST
+        )
