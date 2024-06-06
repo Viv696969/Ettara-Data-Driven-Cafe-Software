@@ -19,3 +19,15 @@ class Profile(models.Model):
     def __str__(self) -> str:
         return self.user.username
     
+class SentimentAnalysis(models.Model):
+    review=models.CharField(max_length=1000,blank=False,null=False)
+    date_of_review=models.DateField()
+    sentiment=models.CharField(max_length=100,blank=False,null=False)
+    sentiment_score=models.CharField(max_length=100,blank=False,null=False)
+
+    # @classmethod
+    # def count_reviews(table):
+    #     return table.objects.count()
+
+    def __str__(self) -> str:
+        return self.review[:200]
