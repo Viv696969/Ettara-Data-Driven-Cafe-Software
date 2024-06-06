@@ -99,6 +99,8 @@ def store_reviews():
                 conn.commit()
     else:
         print("Erorr in recieveing data")
+    cursor.close()
+    conn.close()
 
 
 if __name__=="__main__":
