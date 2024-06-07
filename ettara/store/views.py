@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken,AccessToken
 from .models import *
 from django.shortcuts import get_object_or_404
 from .serializers import *
-
+import json
 # Create your views here.
 
 @api_view(['POST'])
@@ -29,7 +29,35 @@ def show_categories(request):
 @api_view(['POST'])
 def show_products(request):
     user=request.user
-    print(user)
+    if user.is_authenticated:
+        '''
+        do something like recommendation...
+        '''
+        if 'activity' in request.data:
+            '''
+            give recommendation based on activity...
+            '''
+            activity_list=json.loads(json.dumps(request.data))['activity']
+            return JsonResponse({'data':'test'},status=200)
+        else:
+            products=Product.objects.all()
+            data=AllProductSerializer(products,many=True).data
+
+            return JsonResponse({
+                'data':data
+            },
+            status=200
+            ) 
+    else:
+        '''
+        Just show the Products..
+        '''
+        products=Product.objects.all()
+        data=AllProductSerializer(products,many=True).data
+
     return JsonResponse({
-        'data':"test"
-    })
+        'data':data
+    },
+    status=200
+    )
+
