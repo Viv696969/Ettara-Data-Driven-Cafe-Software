@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'django_rest_passwordreset',
+    'store',
 
    
 ]
@@ -85,10 +86,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ettara.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-
 
 DATABASES = {
     'default': {
@@ -102,8 +99,6 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {

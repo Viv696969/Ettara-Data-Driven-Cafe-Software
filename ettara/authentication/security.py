@@ -9,7 +9,6 @@ env_file_path=os.path.join('..', '.env')
 environ.Env.read_env(env_file_path)
 
 key=Fernet.generate_key()
-print(key)
 cipher_suite=Fernet(key)
 JWT_SECRET=env("SECRET")
 
