@@ -26,3 +26,13 @@ class AllProductSerializer(serializers.ModelSerializer):
     def get_category(self,product):
         return {'name':product.category.name,'id':product.category.id}
     
+class RecommendedProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Product
+        fields=[
+            'name',
+            'id',
+            'price',
+            'product_image',
+            ]
+    

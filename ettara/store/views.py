@@ -11,6 +11,10 @@ from .models import *
 from django.shortcuts import get_object_or_404
 from .serializers import *
 import json
+from .apps import StoreConfig
+import numpy as np
+
+collection=StoreConfig.collection
 # Create your views here.
 
 @api_view(['POST'])
@@ -27,6 +31,7 @@ def show_categories(request):
 
 
 @api_view(['POST'])
+@csrf_exempt
 def show_products(request):
     user=request.user
     if user.is_authenticated:
@@ -37,8 +42,31 @@ def show_products(request):
             '''
             give recommendation based on activity...
             '''
-            activity_list=json.loads(json.dumps(request.data))['activity']
-            return JsonResponse({'data':'test'},status=200)
+            activity_list=json.loads(
+                json.dumps(request.data)
+                )['activity']
+            
+            data=collection.get(
+                ids=activity_list,
+                include=['embeddings']
+            )['embeddings']
+
+            target_embedding=np.array(data).mean(0).tolist()
+
+            ids=list(map(int,collection.query(
+                query_embeddings=[target_embedding],
+                include=['distances'],
+                n_results=5
+            )['ids'][0]))[::-1]
+            print(ids)
+            prods=Product.objects.filter(id__in=ids)
+            recommended_products=sorted(
+                prods,
+                key=lambda x : ids.index(x.id)
+            )
+            data=RecommendedProductSerializer(recommended_products,many=True).data
+
+            return JsonResponse({'data':data},status=200)
         else:
             products=Product.objects.all()
             data=AllProductSerializer(products,many=True).data
@@ -61,3 +89,31 @@ def show_products(request):
     status=200
     )
 
+# @api_view(["GET"])
+# def test(request):
+#     client=chromadb.PersistentClient("./store_db")
+#     collection=client.get_or_create_collection("store_collection",  metadata={"hnsw:space": "cosine"}) 
+
+#     from .models import Product,Category
+#     products=Product.objects.all()
+#     print(products)
+#     documents=[]
+#     metadatas=[]
+#     ids=[]
+#     for product in products:
+#         documents.append(
+#             product.name+product.description
+#         )
+#         metadatas.append({"category":product.category.name})
+#         ids.append(str(product.id))
+
+#     collection.add(
+#     documents=documents,
+#     metadatas=metadatas,
+#     ids=ids
+# )
+#     return JsonResponse(
+#         {
+#             'data':'stored...'
+#         }
+#     )
