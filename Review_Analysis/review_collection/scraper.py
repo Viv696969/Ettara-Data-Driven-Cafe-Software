@@ -3,16 +3,31 @@ from dateutil import relativedelta
 from bs4 import BeautifulSoup
 import requests
 import mysql.connector as mysql
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import torch
+import pprint
+# from transformers import AutoTokenizer, AutoModelForSequenceClassification
+# import torch
 
-tokenizer = AutoTokenizer.from_pretrained(
-    'nlptown/bert-base-multilingual-uncased-sentiment'
-    )
+API_URL = "https://api-inference.huggingface.co/models/nlptown/bert-base-multilingual-uncased-sentiment"
+headers = {"Authorization": "Bearer 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"}
 
-model = AutoModelForSequenceClassification.from_pretrained(
-    'nlptown/bert-base-multilingual-uncased-sentiment'
-    )
+query = '''
+        INSERT INTO sentiment_analysis (review, date, sentiment, value,id)
+        VALUES (%s, %s, %s, %s,%s)
+        '''
+
+def query(payload):
+	response = requests.post(API_URL, headers=headers, json=payload)
+	return response.json()
+	
+
+
+# tokenizer = AutoTokenizer.from_pretrained(
+#     'nlptown/bert-base-multilingual-uncased-sentiment'
+#     )
+
+# model = AutoModelForSequenceClassification.from_pretrained(
+#     'nlptown/bert-base-multilingual-uncased-sentiment'
+#     )
 
 sentiment_mapping={
     1:'very negative',
@@ -23,12 +38,22 @@ sentiment_mapping={
 }
 
 def give_sentiment(text):
-    tokens = tokenizer.encode(text, return_tensors='pt')
-    result=model(tokens)
-    value=int(torch.argmax(result.logits[0]))+1
-    return {'sentiment':sentiment_mapping[value],'value':value,'status':True}
+    # tokens = tokenizer.encode(text, return_tensors='pt')
+    # result=model(tokens)
+    # value=int(torch.argmax(result.logits[0]))+1
+    output = int(
+        query(
+            {"inputs": text}
+    )[0][0]['label'].split()[0]
+    )
+    # return {'sentiment':sentiment_mapping[output],'value':output,'status':True}
+    return {'sentiment':sentiment_mapping[output],'value':output,'status':True}
 
 def give_date(col):
+    if 'yesterday' in col:
+        d = datetime.today() - timedelta(days=1)
+        return d.strftime("%Y-%m-%d")
+    
     if 'days' in col or 'day' in col:
         day=col.split()[0]
         if day=="one" or day=="One":
@@ -69,14 +94,18 @@ def store_reviews():
                 }
                 reviews.append(payload)
         
-        print(results)
 
         conn,cursor=connect()
-        cursor.execute(
-            "select review,id from sentiment_analysis where id=(select max(id) from sentiment_analysis);"
-        )
+        # cursor.execute(
+        #     "select review,date,id from sentiment_analysis order by date desc,id desc limit 1;"
+        # )
+        cursor.execute("select review,id from sentiment_analysis where id = (select max(id) from sentiment_analysis);")
         latest_review=cursor.fetchone()
+
         latest_id=latest_review[1]
+        print(latest_review,"\n")
+
+        value_list=[]
 
         for review in reviews:
             if review['review']==latest_review[0]:
@@ -86,17 +115,19 @@ def store_reviews():
                 text=review['review']
                 print("came")
                 data=give_sentiment(text)
-                latest_id+=1
-                
-                query = '''
-                INSERT INTO sentiment_analysis (review, date, sentiment, value,id)
-                VALUES (%s, %s, %s, %s,%s)
-                '''
-                
-                values = (text,review_date,data['sentiment'],data['value'],latest_id)
+                values = (text,review_date,data['sentiment'],data['value'])
+                value_list.append(values)
 
-                cursor.execute(query, values)
-                conn.commit()
+        print(value_list,"\n")
+        data_list=[]
+        for data in value_list[::-1]:
+            latest_id+=1
+            data=data+(latest_id,)
+            cursor.execute(query,data)
+            conn.commit()
+            # data_list.append(data+(latest_id,))
+
+        
     else:
         print("Erorr in recieveing data")
     cursor.close()

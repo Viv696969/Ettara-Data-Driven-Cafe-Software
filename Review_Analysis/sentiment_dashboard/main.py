@@ -6,11 +6,11 @@ import environ
 env=environ.Env()
 environ.Env.read_env()
 
-st=time()
+
 sentiment_engine=mysql.create_engine(
     f"mysql+mysqlconnector://{env('UNAME')}:{env('PASSWORD')}@{env('ENDPOINT')}:3306/{env('DB')}"
     )
-print(time()-st)
+
 app=FastAPI()
 sentiment_mapping={
     1:'very negative',
