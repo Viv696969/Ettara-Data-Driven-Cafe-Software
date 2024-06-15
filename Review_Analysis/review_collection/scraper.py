@@ -78,6 +78,7 @@ def store_reviews():
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
     }
     r = requests.get(zomato_link, headers=headers)
+    print(r.status_code)
     if r.status_code == 200:
         
         soup=BeautifulSoup(r.text,'html.parser')
@@ -120,13 +121,14 @@ def store_reviews():
                 print(values)
                 cursor.execute(SQL_QUERY,values)
                 conn.commit()   
+        cursor.close()
+        conn.close()
     else:
         print("Erorr in recieveing data")
 
 
 
-    cursor.close()
-    conn.close()
+    
 
 
 if __name__=="__main__":
