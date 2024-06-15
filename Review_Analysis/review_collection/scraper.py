@@ -3,24 +3,31 @@ from dateutil import relativedelta
 from bs4 import BeautifulSoup
 import requests
 import mysql.connector as mysql
-import pprint
-# from transformers import AutoTokenizer, AutoModelForSequenceClassification
-# import torch
 
+
+##################  Configs ###########################################
 API_URL = "https://api-inference.huggingface.co/models/nlptown/bert-base-multilingual-uncased-sentiment"
 headers = {"Authorization": "Bearer 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"}
 
-query = '''
-        INSERT INTO sentiment_analysis (review, date, sentiment, value,id)
-        VALUES (%s, %s, %s, %s,%s)
-        '''
+SQL_QUERY='''
+INSERT INTO sentiment_analysis (review, date, sentiment, value,id)
+VALUES (%s, %s, %s, %s,%s);
+'''
 
-def query(payload):
+def connect():
+    conn=mysql.connect(
+        host='myfirstrds.c5eeiea4ujq1.ap-south-1.rds.amazonaws.com',
+        user='admin',
+        password='admin1234',
+        database='ettara_sentiments_db'
+    )
+    cursor=conn.cursor()
+    return conn,cursor
+
+def api(payload):
 	response = requests.post(API_URL, headers=headers, json=payload)
 	return response.json()
 	
-
-
 # tokenizer = AutoTokenizer.from_pretrained(
 #     'nlptown/bert-base-multilingual-uncased-sentiment'
 #     )
@@ -42,11 +49,10 @@ def give_sentiment(text):
     # result=model(tokens)
     # value=int(torch.argmax(result.logits[0]))+1
     output = int(
-        query(
+        api(
             {"inputs": text}
     )[0][0]['label'].split()[0]
     )
-    # return {'sentiment':sentiment_mapping[output],'value':output,'status':True}
     return {'sentiment':sentiment_mapping[output],'value':output,'status':True}
 
 def give_date(col):
@@ -64,15 +70,7 @@ def give_date(col):
         d = datetime.today() - timedelta(days=day)
         return d.strftime("%Y-%m-%d")
     
-def connect():
-    conn=mysql.connect(
-        host='myfirstrds.c5eeiea4ujq1.ap-south-1.rds.amazonaws.com',
-        user='admin',
-        password='admin1234',
-        database='ettara_sentiments_db'
-    )
-    cursor=conn.cursor()
-    return conn,cursor 
+ 
 
 def store_reviews():
     zomato_link="https://www.zomato.com/mumbai/ettarra-1-juhu/reviews"
@@ -96,9 +94,6 @@ def store_reviews():
         
 
         conn,cursor=connect()
-        # cursor.execute(
-        #     "select review,date,id from sentiment_analysis order by date desc,id desc limit 1;"
-        # )
         cursor.execute("select review,id from sentiment_analysis where id = (select max(id) from sentiment_analysis);")
         latest_review=cursor.fetchone()
 
@@ -118,18 +113,18 @@ def store_reviews():
                 values = (text,review_date,data['sentiment'],data['value'])
                 value_list.append(values)
 
-        print(value_list,"\n")
-        data_list=[]
-        for data in value_list[::-1]:
-            latest_id+=1
-            data=data+(latest_id,)
-            cursor.execute(query,data)
-            conn.commit()
-            # data_list.append(data+(latest_id,))
-
-        
+        if len(value_list)>0:
+            for value in value_list[::-1]:
+                latest_id+=1
+                values=value+(latest_id,)
+                print(values)
+                cursor.execute(SQL_QUERY,values)
+                conn.commit()   
     else:
         print("Erorr in recieveing data")
+
+
+
     cursor.close()
     conn.close()
 
