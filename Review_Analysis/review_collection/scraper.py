@@ -7,7 +7,7 @@ import mysql.connector as mysql
 
 ##################  Configs ###########################################
 API_URL = "https://api-inference.huggingface.co/models/nlptown/bert-base-multilingual-uncased-sentiment"
-headers = {"Authorization": "Bearer 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"}
+headers = {"Authorization": "Bearer "}
 
 SQL_QUERY='''
 INSERT INTO sentiment_analysis (review, date, sentiment, value,id)
