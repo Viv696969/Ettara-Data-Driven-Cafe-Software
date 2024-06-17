@@ -2,3 +2,4 @@ ettara_env/
 ettara/.env
 git_command.py
 Review_Analysis/sentiment_dashboard/.env
+Review_Analysis/review_collection/.env
