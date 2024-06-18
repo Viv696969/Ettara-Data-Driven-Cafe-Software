@@ -89,6 +89,32 @@ def show_products(request):
     status=200
     )
 
+@api_view(['POST'])
+@csrf_exempt
+@permission_classes([IsAuthenticated])
+def add_to_cart(request):
+    user=request.user
+    id=int(request.POST['product_id'])
+    quantity=int(request.POST['quantity'])
+    cart,created=Cart.objects.get_or_create(user=user,product=Product.objects.get(id=id))
+    if created:
+        cart.qauntity=quantity
+        cart.total_price=quantity*cart.product.price
+        cart.save()
+        return JsonResponse({
+            'mssg':f'Product {cart.product.name} added to cart..with quantity={quantity}','status':1
+        },status=200)
+    else:
+        return JsonResponse(
+            {'mssg':'Product Already In Cart...','status':0},status=200
+        )
+
+
+
+
+
+
+
 # @api_view(["GET"])
 # def test(request):
 #     client=chromadb.PersistentClient("./store_db")

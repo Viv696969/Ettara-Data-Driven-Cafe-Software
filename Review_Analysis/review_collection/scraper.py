@@ -3,11 +3,14 @@ from dateutil import relativedelta
 from bs4 import BeautifulSoup
 import requests
 import mysql.connector as mysql
+import environ
+env=environ.Env()
+environ.Env.read_env()
 
 
 ##################  Configs ###########################################
 API_URL = "https://api-inference.huggingface.co/models/nlptown/bert-base-multilingual-uncased-sentiment"
-headers = {"Authorization": "Bearer "}
+headers = {"Authorization": f"Bearer {env('HUGGING_FACE_TOKEN')}"}
 
 SQL_QUERY='''
 INSERT INTO sentiment_analysis (review, date, sentiment, value,id)
@@ -16,10 +19,10 @@ VALUES (%s, %s, %s, %s,%s);
 
 def connect():
     conn=mysql.connect(
-        host='myfirstrds.c5eeiea4ujq1.ap-south-1.rds.amazonaws.com',
-        user='admin',
-        password='admin1234',
-        database='ettara_sentiments_db'
+        host=env('ENDPOINT'),
+        user=env('UNAME'),
+        password=env('PASSWORD'),
+        database=env('DB')
     )
     cursor=conn.cursor()
     return conn,cursor

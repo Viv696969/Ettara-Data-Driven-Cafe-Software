@@ -22,6 +22,7 @@ class Product(models.Model):
     product_image=models.ImageField(upload_to='product_images/',blank=False,null=False)
     related_products = models.ManyToManyField('self', symmetrical=False,blank=True)
 
+
     class Meta:
         db_table = 'Products'
 
@@ -42,12 +43,8 @@ class Review(models.Model):
 class Cart(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     product=models.ForeignKey(Product,on_delete=models.CASCADE)
-    qauntity=models.IntegerField()
-    total_price=models.IntegerField()
-    shipping_address=models.TextField(null=True,blank=True)
-    pincode=models.CharField(max_length=20,blank=False,null=False)
-    phone_number=models.CharField(max_length=20,blank=False,null=False)
-    email=models.CharField(max_length=200,blank=True,null=True)
+    qauntity=models.IntegerField(blank=True,null=True)
+    total_price=models.IntegerField(blank=True,null=True)
 
     class Meta:
         db_table = 'Cart'
@@ -59,4 +56,35 @@ class Cart(models.Model):
         return self.user.username+"  |  "+self.product.name
     
     
+class Order(models.Model):
+    shipping_address=models.TextField(null=True,blank=True)
+    city=models.CharField(max_length=300,blank=True,null=True)
+    state=models.CharField(max_length=300,blank=True,null=True)
+    pincode=models.CharField(max_length=20,blank=True,null=True)
+    phone_number=models.CharField(max_length=20,blank=True,null=True)
+    email=models.CharField(max_length=200,blank=True,null=True)
+    payment_mode=models.CharField(max_length=200,blank=True,null=True)
+    total_price=models.FloatField(blank=True,null=True)
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+
+    class Meta:
+        db_table="Orders"
+        indexes=[models.Index(fields=['user',])]
+
+    def __str__(self) -> str:
+        return self.user.username+" "+self.id
     
+class OrderedItem(models.Model):
+    order=models.ForeignKey(Order,on_delete=models.CASCADE)
+    product=models.ForeignKey(Product,on_delete=models.CASCADE)
+    qauntity=models.IntegerField(blank=True,null=True)
+    total_price=models.IntegerField(blank=True,null=True)
+
+    class Meta:
+        db_table = 'OrderedItems'
+        indexes = [
+        models.Index(fields=['order',]),
+        ]
+
+    def __str__(self) -> str:
+        return self.user.username+"  |  "+self.product.name

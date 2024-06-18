@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 class Profile(models.Model):
     email=models.CharField(max_length=200,blank=False,null=False)
+    email_verified=models.BooleanField(default=False)
     name=models.CharField(max_length=200,blank=False,null=False)
     age = models.CharField(max_length=5,blank=False,null=False) # Assuming age is stored as an integer
     mobile = models.CharField(max_length=15,blank=False,null=False)  # CharField with max length to accommodate various mobile number formats
