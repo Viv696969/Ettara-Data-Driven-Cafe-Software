@@ -137,11 +137,13 @@ def show_cart(request):
         return JsonResponse({
             'quantity':cart_size,
             'data':data,
+            'status':True
         },status=200)
 
     else:
         return JsonResponse({
-            'quantity':cart_size,
+            'status':False,
+            'mssg':'No items in Cart..'
         })
 
 @api_view(['POST'])
@@ -169,6 +171,67 @@ def change_quantity(request):
         'status':True
         }
         )
+
+@api_view(['POST'])
+@csrf_exempt
+@permission_classes([IsAuthenticated])
+def checkout(request):
+    # shipping_address=request.POST['shipping_address']
+    # city=request.POST['city']
+    # state=request.POST['state']
+    # pincode=request.POST['pincode']
+    # phone_number=request.POST['phone_number']
+    # email=request.POST['email']
+    # payment_mode=request.POST['payment_mode']
+    total_price=0
+    total_quantity=0
+    carts=Cart.objects.filter(user=request.user)
+    for cart in carts:
+        total_price+=cart.total_price
+        total_quantity+=cart.quantity
+    
+    data=CheckoutSerializer(carts,many=True).data
+    return JsonResponse({
+        'data':data,
+        'total_price':total_price,
+        'total_quantity':total_quantity
+    },status=200)
+
+
+@api_view(['POST'])
+@csrf_exempt
+@permission_classes([IsAuthenticated])
+def place_order(request):
+    shipping_address=request.POST['shipping_address']
+    city=request.POST['city']
+    state=request.POST['state']
+    pincode=request.POST['pincode']
+    phone_number=request.POST['phone_number']
+    email=request.POST['email']
+    payment_mode=request.POST['payment_mode']
+    total_price=0
+    carts=Cart.objects.filter(user=request.user)
+    order=Order.objects.create(
+        shipping_address=shipping_address,city=city,state=state,pincode=pincode,phone_number=phone_number,email=email,payment_mode=payment_mode,user=request.user
+    )
+    
+    for cart in carts:
+        total_price+=cart.total_price
+        ordered_item=OrderedItem.objects.create(
+            order=order,product=cart.product,total_price=cart.total_price,quantity=cart.quantity
+            )
+        ordered_item.save()
+        cart.delete()
+
+    order.total_price=total_price
+    order.save()
+    return JsonResponse({
+        'mssg':'Order Placed successffully!!',
+        'order_id':order.id
+    },status=201)
+
+
+
 
 
 # @api_view(["GET"])

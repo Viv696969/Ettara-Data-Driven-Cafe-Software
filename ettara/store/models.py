@@ -77,7 +77,7 @@ class Order(models.Model):
 class OrderedItem(models.Model):
     order=models.ForeignKey(Order,on_delete=models.CASCADE)
     product=models.ForeignKey(Product,on_delete=models.CASCADE)
-    qauntity=models.IntegerField(blank=True,null=True)
+    quantity=models.IntegerField(blank=True,null=True)
     total_price=models.IntegerField(blank=True,null=True)
 
     class Meta:

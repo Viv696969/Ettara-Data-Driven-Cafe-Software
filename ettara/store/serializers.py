@@ -56,3 +56,20 @@ class CartSerializer(serializers.ModelSerializer):
             'product_image':cart.product.product_image.url   
         }
     
+class CheckoutSerializer(serializers.ModelSerializer):
+    product_info=SerializerMethodField()
+    class Meta:
+        model=Cart
+        fields=[
+            'quantity',
+            'total_price',
+            'product_info',
+        ]
+    
+    def get_product_info(self,cart):
+        return {
+            'name':cart.product.name,
+            'id':cart.product.id,
+            'product_image':cart.product.product_image.url   
+        }
+    
