@@ -36,3 +36,23 @@ class RecommendedProductSerializer(serializers.ModelSerializer):
             'product_image',
             ]
     
+class CartSerializer(serializers.ModelSerializer):
+    # user=serializers.SerializerMethodField()
+    product_info=SerializerMethodField()
+    class Meta:
+        model=Cart
+        fields=[
+            'quantity',
+            'total_price',
+            'product_info',
+        ]
+        depth=1
+    
+    def get_product_info(self,cart):
+        return {
+            'name':cart.product.name,
+            'id':cart.product.id,
+            'price':cart.product.price,
+            'product_image':cart.product.product_image.url   
+        }
+    
