@@ -13,6 +13,7 @@ from .serializers import *
 import json
 from .apps import StoreConfig
 import numpy as np
+from django.db.models import Sum,F
 
 collection=StoreConfig.collection
 # Create your views here.
@@ -176,25 +177,17 @@ def change_quantity(request):
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def checkout(request):
-    # shipping_address=request.POST['shipping_address']
-    # city=request.POST['city']
-    # state=request.POST['state']
-    # pincode=request.POST['pincode']
-    # phone_number=request.POST['phone_number']
-    # email=request.POST['email']
-    # payment_mode=request.POST['payment_mode']
-    total_price=0
-    total_quantity=0
     carts=Cart.objects.filter(user=request.user)
-    for cart in carts:
-        total_price+=cart.total_price
-        total_quantity+=cart.quantity
-    
+    aggregated_data=carts.aggregate(
+        total_price=Sum('total_price'),
+        total_quantity=Sum('quantity')
+
+    )
     data=CheckoutSerializer(carts,many=True).data
     return JsonResponse({
         'data':data,
-        'total_price':total_price,
-        'total_quantity':total_quantity
+        'total_price':aggregated_data['total_price'] or 0,
+        'total_quantity':aggregated_data['total_quantity'] or 0
     },status=200)
 
 
