@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view,permission_classes
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 import json
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken,AccessToken
@@ -13,8 +14,10 @@ import random
 from django.shortcuts import get_object_or_404
 import datetime
 from .security import create_token,decrypt_token
+from django.core.mail import send_mail
+from rest_framework.response import Response
+from .mailing import create_html_mail
 # Create your views here.
-
 
 @api_view(['POST'])
 @csrf_exempt
@@ -34,11 +37,13 @@ def login_user(request):
             status=200
         )
 
+'''
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI0MjU0MjQ0LCJpYXQiOjE3MTkwNzAyNDQsImp0aSI6ImRkYjhlN2Y4NDlmOTQ5ZjNhZjk5ZDExZTdiNDI0MDlkIiwidXNlcl9pZCI6Mn0.V3vPq_qz80VamRkf7LXwYm_gfJQDsKk9OTtW3lsVZIQ
+'''
 
 @api_view(['POST'])
 @csrf_exempt
 def register_user(request):
-
     username=request.POST['uname']
     password1=request.POST['password1']
     password2=request.POST['password2']
@@ -59,54 +64,68 @@ def register_user(request):
         else:
             company=None
 
-        try:
-            new_user=User.objects.create_user(
-                username=username,
-                password=password1,
-                email=email
-            )
-            new_user.save()
-            # creation of access token
-            refresh=RefreshToken.for_user(new_user)
-            access=refresh.access_token
-            print(f"=========\n{str(access)}\n========")
+        # try:
+        new_user=User.objects.create_user(
+            username=username,
+            password=password1,
+            email=email
+        )
+        new_user.save()
+        # creation of access token
+        refresh=RefreshToken.for_user(new_user)
+        access=refresh.access_token
+        print(f"=========\n{str(access)}\n========")
 
-            profile=Profile()
-            profile.user=new_user
-            profile.name=name
-            profile.age=age
-            profile.mobile=mobile
-            profile.company=company
-            profile.country=country
-            profile.city=city
-            profile.state=state
-            profile.pin=pin
-            profile.address=address
-            profile.save()
-        
+        profile=Profile()
+        profile.user=new_user
+        profile.name=name
+        profile.age=age
+        profile.mobile=mobile
+        profile.company=company
+        profile.country=country
+        profile.city=city
+        profile.state=state
+        profile.pin=pin
+        profile.address=address
+        profile.save()
+    
+        payload={
+            'email':email,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=2),
+            'user_id':new_user.id
 
-            return JsonResponse(
-                {
-                    'mssg':"Profile created Successfully...",
-                    'status':1,
-                    'access_token':str(access)
-                },
-                status=201
+        }
+        html=create_html_mail(payload)
+        send_mail(
+            'Email Verification  ettara',
+                'ddrhj', 
+            'vivek.211215.co@mhssce.ac.in',
+            [email], 
+            html_message=html
             )
 
-        except:
-            return JsonResponse(
-                {
-                    'mssg':f"Try a different username... '{username}' is already taken ",
-                    'status':0
-                },
-                status=400
-            )
+        return JsonResponse(
+            {
+                'mssg':"Profile created Successfully...",
+                'status':True,
+                'access_token':str(access)
+            },
+            status=201
+        )
+
+        # except:
+        #     return JsonResponse(
+        #         {
+        #             'mssg':f"Try a different username... '{username}' is already taken ",
+        #             'status':False
+        #         },
+        #         status=400
+        #     )
     else:
         return JsonResponse(
             data={
                 'mssg':"Passwords Dont Match ... Try Again",
-                'status':0
+                'status':False
             },
             safe=False,
             status=status.HTTP_400_BAD_REQUEST

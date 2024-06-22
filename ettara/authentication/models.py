@@ -13,7 +13,7 @@ class Profile(models.Model):
     country = models.CharField(max_length=100,blank=False,null=False)  # CharField with max length for city names
     state = models.CharField(max_length=100,blank=False,null=False)  # CharField with max length for state names
     pin = models.CharField(max_length=10,blank=False,null=False)  # CharField with max length for pin codes
-    address = models.TextField()  # TextField for a potentially long address
+    address = models.TextField(blank=True,null=True)  # TextField for a potentially long address
     user=models.OneToOneField(User,on_delete=models.CASCADE)
 
 
