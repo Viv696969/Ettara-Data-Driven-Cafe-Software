@@ -13,10 +13,10 @@ from .models import *
 import random
 from django.shortcuts import get_object_or_404
 import datetime
-from .security import create_token,decrypt_token
+from .security import create_token,decrypt_token,create_html_template
 from django.core.mail import send_mail
 from rest_framework.response import Response
-from .mailing import create_html_mail
+
 # Create your views here.
 
 @api_view(['POST'])
@@ -37,9 +37,7 @@ def login_user(request):
             status=200
         )
 
-'''
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI0MjU0MjQ0LCJpYXQiOjE3MTkwNzAyNDQsImp0aSI6ImRkYjhlN2Y4NDlmOTQ5ZjNhZjk5ZDExZTdiNDI0MDlkIiwidXNlcl9pZCI6Mn0.V3vPq_qz80VamRkf7LXwYm_gfJQDsKk9OTtW3lsVZIQ
-'''
+
 
 @api_view(['POST'])
 @csrf_exempt
@@ -64,63 +62,63 @@ def register_user(request):
         else:
             company=None
 
-        # try:
-        new_user=User.objects.create_user(
-            username=username,
-            password=password1,
-            email=email
-        )
-        new_user.save()
-        # creation of access token
-        refresh=RefreshToken.for_user(new_user)
-        access=refresh.access_token
-        print(f"=========\n{str(access)}\n========")
+        try:
+            new_user=User.objects.create_user(
+                username=username,
+                password=password1,
+                email=email
+            )
+            new_user.save()
+            # creation of access token
+            refresh=RefreshToken.for_user(new_user)
+            access=refresh.access_token
+            # print(f"=========\n{str(access)}\n========")
 
-        profile=Profile()
-        profile.user=new_user
-        profile.name=name
-        profile.age=age
-        profile.mobile=mobile
-        profile.company=company
-        profile.country=country
-        profile.city=city
-        profile.state=state
-        profile.pin=pin
-        profile.address=address
-        profile.save()
-    
-        payload={
-            'email':email,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=2),
-            'user_id':new_user.id
+            profile=Profile()
+            profile.user=new_user
+            profile.name=name
+            profile.age=age
+            profile.mobile=mobile
+            profile.company=company
+            profile.country=country
+            profile.city=city
+            profile.state=state
+            profile.pin=pin
+            profile.address=address
+            profile.save()
+        
+            payload={
+                'email':email,
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=2),
+                'user_id':new_user.id
 
-        }
-        html=create_html_mail(payload)
-        send_mail(
-            'Email Verification  ettara',
-                'ddrhj', 
-            'vivek.211215.co@mhssce.ac.in',
-            [email], 
-            html_message=html
+            }
+            html=create_html_template(payload)
+            send_mail(
+                'Email Verification  ettara',
+                    ' ', 
+                settings.EMAIL_HOST_USER,
+                [email], 
+                html_message=html
+                )
+
+            return JsonResponse(
+                {
+                    'mssg':"Profile created Successfully...",
+                    'status':True,
+                    'access_token':str(access)
+                },
+                status=201
             )
 
-        return JsonResponse(
-            {
-                'mssg':"Profile created Successfully...",
-                'status':True,
-                'access_token':str(access)
-            },
-            status=201
-        )
-
-        # except:
-        #     return JsonResponse(
-        #         {
-        #             'mssg':f"Try a different username... '{username}' is already taken ",
-        #             'status':False
-        #         },
-        #         status=400
-        #     )
+        except:
+            return JsonResponse(
+                {
+                    'mssg':f"Try a different username... '{username}' is already taken ",
+                    'status':False
+                },
+                status=400
+            )
     else:
         return JsonResponse(
             data={
@@ -215,3 +213,42 @@ def check_otp(request):
         },
         status=status.HTTP_400_BAD_REQUEST
         )
+    
+
+@csrf_exempt
+@api_view(['POST'])
+def verify_mail(request):
+    enc_token=request.POST['token']
+    data=decrypt_token(enc_token)
+    if data['status']:
+        payload=data['payload']
+        id=payload['user_id']
+        user_profile=Profile.objects.get(user__id=id)
+        user_profile.email_verified=True
+        user_profile.save()
+        return HttpResponseRedirect('https://ettarracoffee.in/')
+    else:
+        return HttpResponseRedirect('< Url of Page showing Verified Link Has Expired>')
+
+
+@csrf_exempt
+@api_view(['POST'])  
+@permission_classes([IsAuthenticated])  
+def create_new_verification_message(request):
+    user=request.user
+    payload={
+        'email':user.email,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=2),
+        'user_id':user.id
+
+    }
+    html=create_html_template(payload)
+    send_mail(
+        'Email Verification  ettara',
+            ' ', 
+        settings.EMAIL_HOST_USER,
+        [user.email], 
+        html_message=html
+        )
+    return JsonResponse({'status':True,'mssg':f'Verification Link Sent to {user.email}'})
+

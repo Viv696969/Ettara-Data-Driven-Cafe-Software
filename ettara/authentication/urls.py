@@ -6,5 +6,6 @@ urlpatterns = [
     path('change_password',change_password,name='change_password'),
     path('forgot_password',forgot_password,name='forgot_password'),
     path('check_otp',check_otp,name='check_otp'),
+    path('verify_mail',verify_mail,name='verify_mail'),
 
 ]
