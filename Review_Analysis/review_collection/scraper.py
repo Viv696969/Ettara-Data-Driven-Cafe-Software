@@ -96,7 +96,7 @@ def store_reviews():
                 }
                 reviews.append(payload)
         
-
+        print(reviews)
         conn,cursor=connect()
         cursor.execute("select review,id from sentiment_analysis where id = (select max(id) from sentiment_analysis);")
         latest_review=cursor.fetchone()
