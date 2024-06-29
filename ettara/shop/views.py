@@ -8,6 +8,7 @@ from .models import *
 from .serializers import *
 from pandas import *
 from django.db.models import Sum
+from .market_basket import analysis
 
 @api_view(['POST'])
 @csrf_exempt
@@ -63,16 +64,23 @@ def add_user(request):
 @api_view(['POST'])
 @csrf_exempt
 def add_to_cart(request):
-    phone_number=request.POST['phone_number']
-    product_id=request.POST['product_id']
-    quantity=int(request.POST['quantity'])
-    product=Product.objects.get(id=product_id)
-    cart=Cart.objects.create(product=product,customer=CustomerInfo.objects.get(phone_number=phone_number),
-                        quantity=quantity,total_price=product.price*quantity)
-    cart.save()
-    return JsonResponse({
-        'status':True,'mssg':f'{product.name} added to cart with quantity {quantity}'
-    })
+    try:
+        phone_number=request.POST['phone_number']
+        product_id=request.POST['product_id']
+        quantity=int(request.POST['quantity'])
+        product=Product.objects.get(id=product_id)
+        cart=Cart.objects.create(product=product,customer=CustomerInfo.objects.get(phone_number=phone_number),
+                            quantity=quantity,total_price=product.price*quantity)
+        cart.save()
+        return JsonResponse({
+            'status':True,'mssg':f'{product.name} added to cart with quantity {quantity}'
+        },status=200)
+    except:
+        return JsonResponse({
+            'status':False,'mssg':f'Product Not found'
+        },status=404)
+
+
 
 @api_view(['GET'])
 def get_products(request):
@@ -86,41 +94,42 @@ def get_products(request):
 @api_view(['POST'])
 @csrf_exempt
 def place_order(request):
-    phone=request.POST['phone_number']
-    customer=CustomerInfo.objects.get(phone_number=phone)
-    cart=Cart.objects.filter(customer=customer)
-    aggregated_data=cart.aggregate(total_order_price=Sum('total_price'))
+    try:
+        phone=request.POST['phone_number']
+        customer=CustomerInfo.objects.get(phone_number=phone)
+        cart=Cart.objects.filter(customer=customer)
+        aggregated_data=cart.aggregate(total_order_price=Sum('total_price'))
 
-    order=Order.objects.create(
-        payment_mode=request.POST['payment_mode'],
-        customer=customer,
-        total_price=aggregated_data['total_order_price'],
-    )
-    order.save()
-    basket_string=''
-    for product_item in cart:
-        order_item=OrderItem.objects.create(
-            order=order,product=product_item.product,quantity=product_item.quantity,total_price=product_item.total_price
-            
+        order=Order.objects.create(
+            payment_mode=request.POST['payment_mode'],
+            customer=customer,
+            total_price=aggregated_data['total_order_price'],
         )
-        basket_string+=f'{product_item.product.name},'
-        order_item.save()
-    print(basket_string)
-    basket=MarketBasket.objects.create(
-        order=order,
-        basket_string=basket_string[0:len(basket_string)-1]
-    )
-    basket.save()
-    cart.delete()
-    return JsonResponse({
-        'status':True,'mssg':f'Order created successfully !! order id is {order.id}'
-    })
+        order.save()
+        basket_string=''
+        for product_item in cart:
+            order_item=OrderItem.objects.create(
+                order=order,product=product_item.product,quantity=product_item.quantity,total_price=product_item.total_price
+                
+            )
+            basket_string+=f'{product_item.product.name},'
+            order_item.save()
 
-# # Step 1: Prepare your data
-# texts = ["5,6,7,8", "1,2,3,4", "9,10,11,12"]  # Example list of texts; replace with your actual list
+        basket=MarketBasket.objects.create(
+            order=order,
+            basket_string=basket_string[0:len(basket_string)-1]
+        )
+        basket.save()
+        cart.delete()
+        return JsonResponse({
+            'status':True,'mssg':f'Order created successfully !! order id is {order.id}'
+        })
+    except:
+        return JsonResponse({
+            'status':False,'mssg':f'Problem Creating order!'
+        })
 
-# # Step 2: Create a pandas DataFrame from the list
-# df = pd.DataFrame(texts, columns=['text'])
-
-# # Step 3: Split the 'text' column into separate columns
-# df = df['text'].str.split(',', expand=True)
+@api_view(['GET'])
+def market_basket_analysis(request):
+    data=analysis()
+    return JsonResponse({'data':data},status=200)

@@ -48,7 +48,7 @@ class OrderItem(models.Model):
     total_price=models.FloatField(null=False,blank=False)
 
     def __str__(self) -> str:
-        return self.id
+        return self.product.name
     
 class MarketBasket(models.Model):
     order=models.ForeignKey(Order,on_delete=models.DO_NOTHING)
