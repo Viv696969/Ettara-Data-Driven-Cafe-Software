@@ -71,7 +71,7 @@ coding practices, making a proper ReadMe and so on.
 ![alt text](https://github.com/Viv696969/Ettara-Data-Driven-Cafe-Software/blob/main/folder_structure_ettara.png?raw=true)
 
 ## Documentation
-Click here to view the documentation.
+Click [here](https://github.com/Viv696969/Ettara-Data-Driven-Cafe-Software/blob/main/documentation.md) to view the documentation.
 
 ## Environment Variables
 
