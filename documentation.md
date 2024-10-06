@@ -1,4 +1,3 @@
-# Documentation
 # Django Backend API Documentation
 
 This document provides a comprehensive overview of the Django backend APIs for your project. It includes details about available endpoints, request types, required parameters, responses, and authentication methods. This will assist frontend developers in understanding how to interact with the backend effectively.
@@ -7,31 +6,42 @@ This document provides a comprehensive overview of the Django backend APIs for y
 
 - [General Information](#general-information)
 - [Authentication Endpoints](#authentication-endpoints)
-  - [Login User](#1-login-user)
-  - [Register User](#2-register-user)
-  - [Change Password](#3-change-password)
-  - [Forgot Password](#4-forgot-password)
-  - [Check OTP](#5-check-otp)
-  - [Verify Mail](#6-verify-mail)
-  - [Create New Verification Message](#7-create-new-verification-message)
+  - [1. Login User](#1-login-user)
+  - [2. Register User](#2-register-user)
+  - [3. Change Password](#3-change-password)
+  - [4. Forgot Password](#4-forgot-password)
+  - [5. Check OTP](#5-check-otp)
+  - [6. Verify Mail](#6-verify-mail)
+  - [7. Create New Verification Message](#7-create-new-verification-message)
 - [Store Endpoints](#store-endpoints)
-  - [Show Categories](#1-show-categories)
-  - [Show Products](#2-show-products)
-  - [Add to Cart](#3-add-to-cart)
-  - [Remove from Cart](#4-remove-from-cart)
-  - [Show Cart](#5-show-cart)
-  - [Change Quantity](#6-change-quantity)
-  - [Checkout](#7-checkout)
-  - [Place Order](#8-place-order)
+  - [1. Show Categories](#1-show-categories)
+  - [2. Show Products](#2-show-products)
+  - [3. Add to Cart](#3-add-to-cart)
+  - [4. Remove from Cart](#4-remove-from-cart)
+  - [5. Show Cart](#5-show-cart)
+  - [6. Change Quantity](#6-change-quantity)
+  - [7. Checkout](#7-checkout)
+  - [8. Place Order](#8-place-order)
+- [Shop Endpoints](#shop-endpoints)
+  - [1. Load Data](#1-load-data)
+  - [2. Add User](#2-add-user)
+  - [3. Give User](#3-give-user)
+  - [4. Add to Cart](#4-add-to-cart)
+  - [5. Get Products](#5-get-products)
+  - [6. Place Order](#6-place-order)
+  - [7. Market Basket Analysis](#7-market-basket-analysis)
 - [Authentication Details](#authentication-details)
 - [Error Handling](#error-handling)
+- [Additional Notes](#additional-notes)
 
 ---
 
 ## General Information
 
 - **Base URL:** `/` (All endpoints are relative to the base URL)
-- **Authentication:** JSON Web Tokens (JWT) are used for authenticated endpoints.
+- **Authentication:** 
+  - **Authentication Endpoints:** Use JSON Web Tokens (JWT) for authentication.
+  - **Shop Endpoints:** Use `phone_number` as a unique identifier for user actions.
 - **Content Type:** All requests and responses use `application/json`.
 - **CSRF Protection:** Disabled for API endpoints using `@csrf_exempt`.
 
@@ -92,18 +102,18 @@ This document provides a comprehensive overview of the Django backend APIs for y
 
 | Parameter   | Type    | Description                  | Required |
 |-------------|---------|------------------------------|----------|
-| uname        | string  | Desired username             | Yes      |
-| password1    | string  | Password                     | Yes      |
-| password2    | string  | Password confirmation        | Yes      |
-| name         | string  | Full name                    | Yes      |
-| age          | integer | Age                          | Yes      |
-| mobile       | string  | Mobile number                | Yes      |
-| email        | string  | Email address                | Yes      |
-| city         | string  | City                         | Yes      |
-| state        | string  | State                        | Yes      |
-| pin          | string  | PIN code                     | Yes      |
-| address      | string  | Residential address          | Yes      |
-| company      | string  | Company name (optional)      | No       |
+| uname       | string  | Desired username             | Yes      |
+| password1   | string  | Password                     | Yes      |
+| password2   | string  | Password confirmation        | Yes      |
+| name        | string  | Full name                    | Yes      |
+| age         | integer | Age                          | Yes      |
+| mobile      | string  | Mobile number                | Yes      |
+| email       | string  | Email address                | Yes      |
+| city        | string  | City                         | Yes      |
+| state       | string  | State                        | Yes      |
+| pin         | string  | PIN code                     | Yes      |
+| address     | string  | Residential address          | Yes      |
+| company     | string  | Company name (optional)      | No       |
 
 #### Request Example
 
@@ -137,7 +147,7 @@ This document provides a comprehensive overview of the Django backend APIs for y
   ```
 
 - **Failure (400 Bad Request):**
-
+  
   - Passwords do not match:
 
     ```json
@@ -166,16 +176,16 @@ This document provides a comprehensive overview of the Django backend APIs for y
 
 #### Headers
 
-| Header            | Description                     | Required |
-|-------------------|---------------------------------|----------|
-| Authorization     | `Bearer <access_token>`         | Yes      |
+| Header        | Description                 | Required |
+|---------------|-----------------------------|----------|
+| Authorization | `Bearer <access_token>`     | Yes      |
 
 #### Request Parameters
 
-| Parameter      | Type   | Description         | Required |
-|----------------|--------|---------------------|----------|
-| old_password   | string | Current password    | Yes      |
-| new_password   | string | New desired password| Yes      |
+| Parameter    | Type   | Description         | Required |
+|--------------|--------|---------------------|----------|
+| old_password | string | Current password    | Yes      |
+| new_password | string | New desired password| Yes      |
 
 #### Request Example
 
@@ -217,9 +227,9 @@ This document provides a comprehensive overview of the Django backend APIs for y
 
 #### Request Parameters
 
-| Parameter      | Type   | Description          | Required |
-|----------------|--------|----------------------|----------|
-| email_of_user  | string | User's registered email | Yes      |
+| Parameter     | Type   | Description              | Required |
+|---------------|--------|--------------------------|----------|
+| email_of_user | string | User's registered email  | Yes      |
 
 #### Request Example
 
@@ -284,7 +294,7 @@ This document provides a comprehensive overview of the Django backend APIs for y
   ```
 
 - **Failure (400 Bad Request):**
-
+  
   - OTP mismatch:
 
     ```json
@@ -312,9 +322,9 @@ This document provides a comprehensive overview of the Django backend APIs for y
 
 #### Request Parameters
 
-| Parameter | Type   | Description     | Required |
-|-----------|--------|-----------------|----------|
-| token     | string | Encrypted token | Yes      |
+| Parameter | Type   | Description      | Required |
+|-----------|--------|------------------|----------|
+| token     | string | Encrypted token  | Yes      |
 
 #### Request Example
 
@@ -344,9 +354,9 @@ This document provides a comprehensive overview of the Django backend APIs for y
 
 #### Headers
 
-| Header            | Description                     | Required |
-|-------------------|---------------------------------|----------|
-| Authorization     | `Bearer <access_token>`         | Yes      |
+| Header        | Description             | Required |
+|---------------|-------------------------|----------|
+| Authorization | `Bearer <access_token>` | Yes      |
 
 #### Request Parameters
 
@@ -419,17 +429,17 @@ _None_
 
 #### Headers
 
-| Header            | Description                     | Required |
-|-------------------|---------------------------------|----------|
-| Authorization     | `Bearer <access_token>`         | Optional (for recommendations) |
+| Header        | Description             | Required |
+|---------------|-------------------------|----------|
+| Authorization | `Bearer <access_token>` | Optional (for recommendations) |
 
 #### Request Parameters
 
 - **For Recommendations:**
 
-  | Parameter | Type   | Description               | Required |
-  |-----------|--------|---------------------------|----------|
-  | activity  | array  | List of user activity IDs | No       |
+  | Parameter | Type  | Description                | Required |
+  |-----------|-------|----------------------------|----------|
+  | activity  | array | List of user activity IDs  | No       |
 
 - **Without Recommendations:**
 
@@ -465,7 +475,7 @@ _None_
           "name": "Espresso",
           "price": 3.99,
           "description": "Strong coffee shot."
-        },
+        }
         // ... more recommended products
       ]
     }
@@ -481,7 +491,7 @@ _None_
           "name": "Latte",
           "price": 4.99,
           "description": "Milk-based coffee."
-        },
+        }
         // ... more products
       ]
     }
@@ -497,17 +507,17 @@ _None_
 
 #### Headers
 
-| Header            | Description                     | Required |
-|-------------------|---------------------------------|----------|
-| Authorization     | `Bearer <access_token>`         | Yes      |
-| Content-Type      | `application/json`              | Yes      |
+| Header        | Description             | Required |
+|---------------|-------------------------|----------|
+| Authorization | `Bearer <access_token>` | Yes      |
+| Content-Type  | `application/json`      | Yes      |
 
 #### Request Parameters
 
-| Parameter  | Type   | Description      | Required |
-|------------|--------|------------------|----------|
-| product_id | integer| ID of the product| Yes      |
-| quantity   | integer| Quantity to add  | Yes      |
+| Parameter  | Type    | Description       | Required |
+|------------|---------|-------------------|----------|
+| product_id | integer | ID of the product | Yes      |
+| quantity   | integer | Quantity to add   | Yes      |
 
 #### Request Example
 
@@ -550,16 +560,16 @@ _None_
 
 #### Headers
 
-| Header            | Description                     | Required |
-|-------------------|---------------------------------|----------|
-| Authorization     | `Bearer <access_token>`         | Yes      |
-| Content-Type      | `application/json`              | Yes      |
+| Header        | Description             | Required |
+|---------------|-------------------------|----------|
+| Authorization | `Bearer <access_token>` | Yes      |
+| Content-Type  | `application/json`      | Yes      |
 
 #### Request Parameters
 
-| Parameter  | Type    | Description       | Required |
-|------------|---------|-------------------|----------|
-| product_id | integer | ID of the product | Yes      |
+| Parameter  | Type    | Description        | Required |
+|------------|---------|--------------------|----------|
+| product_id | integer | ID of the product  | Yes      |
 
 #### Request Example
 
@@ -597,10 +607,10 @@ _None_
 
 #### Headers
 
-| Header            | Description                     | Required |
-|-------------------|---------------------------------|----------|
-| Authorization     | `Bearer <access_token>`         | Yes      |
-| Content-Type      | `application/json`              | Yes      |
+| Header        | Description             | Required |
+|---------------|-------------------------|----------|
+| Authorization | `Bearer <access_token>` | Yes      |
+| Content-Type  | `application/json`      | Yes      |
 
 #### Request Parameters
 
@@ -664,18 +674,18 @@ _None_
 
 #### Headers
 
-| Header            | Description                     | Required |
-|-------------------|---------------------------------|----------|
-| Authorization     | `Bearer <access_token>`         | Yes      |
-| Content-Type      | `application/json`              | Yes      |
+| Header        | Description             | Required |
+|---------------|-------------------------|----------|
+| Authorization | `Bearer <access_token>` | Yes      |
+| Content-Type  | `application/json`      | Yes      |
 
 #### Request Parameters
 
-| Parameter        | Type    | Description                 | Required |
-|------------------|---------|-----------------------------|----------|
+| Parameter        | Type    | Description                     | Required |
+|------------------|---------|---------------------------------|----------|
 | type             | string  | Type of change (`reduce` or `increase`) | Yes      |
-| quantity         | integer | Quantity to change by      | Yes      |
-| product_id       | integer | ID of the product           | Yes      |
+| quantity         | integer | Quantity to change by          | Yes      |
+| product_id       | integer | ID of the product               | Yes      |
 
 #### Request Example
 
@@ -729,10 +739,10 @@ _None_
 
 #### Headers
 
-| Header            | Description                     | Required |
-|-------------------|---------------------------------|----------|
-| Authorization     | `Bearer <access_token>`         | Yes      |
-| Content-Type      | `application/json`              | Yes      |
+| Header        | Description             | Required |
+|---------------|-------------------------|----------|
+| Authorization | `Bearer <access_token>` | Yes      |
+| Content-Type  | `application/json`      | Yes      |
 
 #### Request Parameters
 
@@ -787,10 +797,10 @@ _None_
 
 #### Headers
 
-| Header            | Description                     | Required |
-|-------------------|---------------------------------|----------|
-| Authorization     | `Bearer <access_token>`         | Yes      |
-| Content-Type      | `application/json`              | Yes      |
+| Header        | Description             | Required |
+|---------------|-------------------------|----------|
+| Authorization | `Bearer <access_token>` | Yes      |
+| Content-Type  | `application/json`      | Yes      |
 
 #### Request Parameters
 
@@ -831,6 +841,323 @@ _None_
 
 ---
 
+## Shop Endpoints
+
+### 1. Load Data
+
+- **URL:** `/shop/load_data`
+- **Method:** `POST`
+- **Description:** Loads product data from a CSV file into the database. **Note:** The CSV file path needs to be specified in the view.
+
+#### Request Parameters
+
+_None_
+
+#### Request Example
+
+```json
+{}
+```
+
+#### Response
+
+- **Success (200 OK):**
+
+  ```json
+  {
+    "status": true
+  }
+  ```
+
+- **Failure (500 Internal Server Error):**
+
+  ```json
+  {
+    "status": false,
+    "mssg": "Error message detailing the issue."
+  }
+  ```
+
+**_Note:_** Ensure that the CSV file path in the `read_csv("")` function is correctly specified to avoid errors.
+
+---
+
+### 2. Add User
+
+- **URL:** `/shop/add_user`
+- **Method:** `POST`
+- **Description:** Adds a new user based on `phone_number` and `full_name`. If the user already exists, returns a message indicating so.
+
+#### Request Parameters
+
+| Parameter    | Type   | Description       | Required |
+|--------------|--------|-------------------|----------|
+| phone_number | string | User's phone number | Yes      |
+| full_name    | string | User's full name    | Yes      |
+
+#### Request Example
+
+```json
+{
+  "phone_number": "1234567890",
+  "full_name": "John Doe"
+}
+```
+
+#### Response
+
+- **Success (201 Created):**
+
+  ```json
+  {
+    "status": true,
+    "mssg": "User Created"
+  }
+  ```
+
+- **Failure (200 OK):**
+
+  ```json
+  {
+    "status": false,
+    "mssg": "user exists"
+  }
+  ```
+
+---
+
+### 3. Give User
+
+- **URL:** `/shop/give_user`
+- **Method:** `POST`
+- **Description:** Retrieves user information based on `phone_number`. **Note:** Authentication is currently not enforced but can be enabled by uncommenting the `@permission_classes([IsAuthenticated])` decorator.
+
+#### Request Parameters
+
+| Parameter     | Type   | Description        | Required |
+|---------------|--------|--------------------|----------|
+| phone_number  | string | User's phone number | Yes      |
+
+#### Request Example
+
+```json
+{
+  "phone_number": "1234567890"
+}
+```
+
+#### Response
+
+- **Success (200 OK):**
+
+  ```json
+  {
+    "status": true,
+    "user_info": {
+      "name": "John Doe",
+      "phone_number": "1234567890"
+    }
+  }
+  ```
+
+- **Failure (404 Not Found):**
+
+  ```json
+  {
+    "status": false,
+    "mssg": "No Such user"
+  }
+  ```
+
+---
+
+### 4. Add to Cart
+
+- **URL:** `/shop/add_to_cart`
+- **Method:** `POST`
+- **Description:** Adds a product to the user's cart based on `phone_number`. **Note:** Authentication is managed via `phone_number` instead of JWT.
+
+#### Request Parameters
+
+| Parameter   | Type    | Description       | Required |
+|-------------|---------|-------------------|----------|
+| phone_number | string | User's phone number | Yes      |
+| product_id   | integer| ID of the product    | Yes      |
+| quantity     | integer| Quantity to add      | Yes      |
+
+#### Request Example
+
+```json
+{
+  "phone_number": "1234567890",
+  "product_id": 101,
+  "quantity": 2
+}
+```
+
+#### Response
+
+- **Success (200 OK):**
+
+  ```json
+  {
+    "status": true,
+    "mssg": "Latte added to cart with quantity 2"
+  }
+  ```
+
+- **Failure (404 Not Found):**
+
+  ```json
+  {
+    "status": false,
+    "mssg": "Product Not found"
+  }
+  ```
+
+---
+
+### 5. Get Products
+
+- **URL:** `/shop/get_products`
+- **Method:** `GET`
+- **Description:** Retrieves a list of all available products.
+
+#### Request Parameters
+
+_None_
+
+#### Request Example
+
+_No parameters are required._
+
+#### Response
+
+- **Success (200 OK):**
+
+  ```json
+  {
+    "status": true,
+    "products": [
+      {
+        "id": 101,
+        "name": "Latte",
+        "price": 4.99,
+        "description": "Milk-based coffee."
+      },
+      {
+        "id": 102,
+        "name": "Espresso",
+        "price": 3.99,
+        "description": "Strong coffee shot."
+      }
+      // ... more products
+    ]
+  }
+  ```
+
+- **Failure (500 Internal Server Error):**
+
+  ```json
+  {
+    "status": false,
+    "mssg": "Error message detailing the issue."
+  }
+  ```
+
+---
+
+### 6. Place Order
+
+- **URL:** `/shop/place_order`
+- **Method:** `POST`
+- **Description:** Places an order based on the user's cart contents using `phone_number`.
+
+#### Request Parameters
+
+| Parameter     | Type   | Description           | Required |
+|---------------|--------|-----------------------|----------|
+| phone_number  | string | User's phone number    | Yes      |
+| payment_mode  | string | Payment method        | Yes      |
+
+#### Request Example
+
+```json
+{
+  "phone_number": "1234567890",
+  "payment_mode": "Credit Card"
+}
+```
+
+#### Response
+
+- **Success (200 OK):**
+
+  ```json
+  {
+    "status": true,
+    "mssg": "Order created successfully !! order id is 5001"
+  }
+  ```
+
+- **Failure (500 Internal Server Error):**
+
+  ```json
+  {
+    "status": false,
+    "mssg": "Problem Creating order!"
+  }
+  ```
+
+---
+
+### 7. Market Basket Analysis
+
+- **URL:** `/shop/market_basket_analysis`
+- **Method:** `GET`
+- **Description:** Performs market basket analysis and returns the results.
+
+#### Request Parameters
+
+_None_
+
+#### Request Example
+
+_No parameters are required._
+
+#### Response
+
+- **Success (200 OK):**
+
+  ```json
+  {
+    "data": [
+      {
+        "association_rules": [
+          {
+            "antecedents": ["Latte"],
+            "consequents": ["Espresso"],
+            "confidence": 0.8
+          }
+          // ... more rules
+        ]
+      }
+      // ... more analysis data
+    ]
+  }
+  ```
+
+- **Failure (500 Internal Server Error):**
+
+  ```json
+  {
+    "status": false,
+    "mssg": "Error message detailing the issue."
+  }
+  ```
+
+---
+
 ## Authentication Details
 
 ### JSON Web Tokens (JWT)
@@ -852,6 +1179,8 @@ Authorization: Bearer <access_token>
 ```http
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJI...
 ```
+
+**_Note for Shop Endpoints:_** The Shop component primarily uses `phone_number` for user identification instead of JWT tokens. Ensure that `phone_number` is securely handled and validated on the frontend.
 
 ---
 
@@ -883,6 +1212,8 @@ All error responses include appropriate HTTP status codes and descriptive messag
 - **CSRF Protection:** Disabled for all API endpoints using `@csrf_exempt`. Ensure that other security measures are in place.
 - **Data Validation:** The backend performs basic validation. Frontend should also implement client-side validation for better user experience.
 - **Rate Limiting:** Not implemented. Consider adding rate limiting to protect against abuse.
+- **Shop Component Authentication:** The Shop endpoints use `phone_number` for user actions. Ensure that phone numbers are unique and securely managed.
+- **Market Basket Analysis:** The `/shop/market_basket_analysis` endpoint relies on the `analysis` function from the `market_basket` module. Ensure that this function is optimized for performance, especially with large datasets.
 
 ---
 
