@@ -96,15 +96,11 @@ To run this project, you will need to add the following environment variables to
   pip install -r requirements.txt
 ```
 
-## 🔗 Links
+## 🔗 Connect With Me
 [![medium](https://img.shields.io/badge/Medium-000?logo=medium&logoColor=fff&style=for-the-badge)](https://medium.com/@vivekchouhan69696)
-
 [![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/vivek-chouhan/)
-
 [![github](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=fff&style=for-the-badge)](https://github.com/Viv696969)
-
 [![geeksforgeeks](https://img.shields.io/badge/GeeksforGeeks-2F8D46?logo=geeksforgeeks&logoColor=fff&style=for-the-badge)](https://www.geeksforgeeks.org/user/chouhanvlxst/)
-
 [![leetcode](https://img.shields.io/badge/LeetCode-FFA116?logo=leetcode&logoColor=fff&style=for-the-badge)](https://leetcode.com/u/vivekchouhan69696/)
 
 
